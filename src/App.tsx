@@ -43,7 +43,9 @@ function addMarker(position: google.maps.LatLng | google.maps.LatLngLiteral) {
 
   marker.addListener("dragend", () => {
     const newPosition = marker.getPosition(); // Get the new position of the marker
-    console.log("Marker dragged to:", newPosition.toString());
+    if (newPosition) {
+      console.log("Marker dragged to:", newPosition.toString());
+    }
   });
 
   markers.push(marker);
