@@ -2,43 +2,72 @@ import React, { useEffect } from "react";
 
 import "./reset.css";
 
+const labels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+let labelIndex = 0;
+
 let map: google.maps.Map;
-const center: google.maps.LatLngLiteral = {
-  lat: 49.52315912602228,
-  lng: 30.949206817026095,
-};
+let markers: google.maps.Marker[] = [];
 
 async function initMap(): Promise<void> {
+  const ukraine: google.maps.LatLngLiteral = {
+    lat: 49.52315912602228,
+    lng: 30.949206817026095,
+  };
+
   const { Map } = (await google.maps.importLibrary(
     "maps"
   )) as google.maps.MapsLibrary;
-  const { AdvancedMarkerElement } = (await google.maps.importLibrary(
-    "marker"
-  )) as google.maps.MarkerLibrary;
 
   map = new Map(document.getElementById("map") as HTMLElement, {
-    center,
+    center: ukraine,
     zoom: 6,
-    mapId: "4504f8b37365c3d0",
+    mapId: "6529720537f83a02",
   });
 
-  const priceTag = document.createElement("div");
-  priceTag.className = "price-tag";
-  priceTag.textContent = "$2.5M";
+  map.addListener("click", (event: google.maps.MapMouseEvent) => {
+    addMarker(event.latLng!);
+  });
 
-  const marker = new AdvancedMarkerElement({
+  document
+    .getElementById("delete-markers")!
+    .addEventListener("click", deleteMarkers);
+}
+
+function addMarker(position: google.maps.LatLng | google.maps.LatLngLiteral) {
+  const marker = new google.maps.Marker({
+    position,
+    label: labels[labelIndex++ % labels.length],
     map,
-    position: { lat: 49.52315912602228, lng: 30.949206817026095 },
-    content: priceTag,
+    draggable: true,
   });
+
+  marker.addListener("dragend", () => {
+    const newPosition = marker.getPosition(); // Get the new position of the marker
+    console.log("Marker dragged to:", newPosition.toString());
+  });
+
+  markers.push(marker);
+}
+
+function deleteMarkers(): void {
+  markers.forEach((marker) => {
+    marker.setMap(null);
+  });
+
+  markers = [];
 }
 
 const App: React.FC = () => {
   useEffect(() => {
     initMap();
-  }, []); // Run once when component mounts
+  }, []);
 
-  return <div id="map" style={{ width: "100%", height: "600px" }}></div>;
+  return (
+    <>
+      <input id="delete-markers" type="button" value="Delete Markers" />
+      <div id="map" style={{ width: "100vw", height: "100vh" }} />
+    </>
+  );
 };
 
 export default App;
